@@ -22,3 +22,8 @@ Route::prefix('survey')->as('survey.')->middleware('checkCache')->group(function
     Route::post('info/store', [SurveyController::class, 'storeInfo'])->name('info.store');
     Route::get('{user}/finish', [SurveyController::class, 'finish'])->name('finish');
 });
+
+Route::get('/panel/index', [HomeController::class, 'index'])->name('index');
+Route::view('panel/login', 'login')->name('login');
+Route::post('panel/login', [HomeController::class, 'login'])->name('login');
+

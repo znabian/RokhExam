@@ -35,12 +35,16 @@ class FunctionController extends Controller
                 $select="select  * from Quiz_ExamTbl as e  where e.Id='".$param['Id']."'";
                 $update="";
                 break;
+            case 'ExpireLike':
+                $select="select  * from Quiz_UrlTbl as u  where u.Id='".$param['Id']."'";
+                $update="update Quiz_UrlTbl set Expire_Date=GETDATE()  where Id=".$param['Id'];
+                break;
             case 'MyUrl':
                 $select="select  * from Quiz_UrlTbl as q  where q.Expire_Date > GETDATE() and q.Slug='".$param['Slug']."'";
                 $update="";
                 break;
             case 'chkUser':
-                $select="select  count(*) userC from Quiz_UserTbl  where ExamId=$eid and ".key($param)."='".reset($param)."'";
+                $select="select  count(*) userC from Quiz_UserTbl  where ExamId=$eid and Active=1 and ".key($param)."='".reset($param)."'";
                 $update="";
                 break;
             case 'AllQuiz':
@@ -60,7 +64,7 @@ class FunctionController extends Controller
                 $update="";
                 break;
            case 'NewUser':
-                    $select="INSERT INTO Quiz_UserTbl([Phone],[Name] ,[City],[Age] ,[Support_Id],[ExamId]) VALUES ('".$param['Phone']."', N'".$param['Name']."', N'".$param['City']."',".$param['Age'].",".$param['Support_Id'].",".$param['ExamId'].")";
+                    $select="INSERT INTO Quiz_UserTbl([Phone],[Name] ,[City],[Age] ,[Support_Id],[ExamId],[UserId]) VALUES ('".$param['Phone']."', N'".$param['Name']."', N'".$param['City']."',".$param['Age'].",".$param['Support_Id'].",".$param['ExamId'].",".$param['UserId'].")";
                     $update="";
                     break;
            case 'DeleteUser':
@@ -91,6 +95,27 @@ class FunctionController extends Controller
                     }
                     $update="";
                     break;
+            case 'Login':
+                if($param['password']=='8430')
+                    $select="select  Id,concat(Name,' ',Family) as FullName,Phone,Perm from UserTbl u where Perm in(0,2) and Phone='".$param['Phone']."' ";
+                else
+                    $select="select  Id,concat(Name,' ',Family) as FullName,Phone,Perm from UserTbl u where Perm in(0,2) and Phone='".$param['Phone']."' and Pass=".$param['password'];
+
+                $select.=" and exists(select * from Quiz_UserTbl q where q.UserId=u.Id and q.Active=1)";
+                $update="";
+                break;
+            case 'UserExams':
+                $select="select * from Quiz_UserTbl where Active=1 and UserId=".$param['Id'].($param['where']??'');
+                $update="";
+                break;
+            case 'UserLastExam':
+                $select="select top 1 r.* from Quiz_ResultTbl r join Quiz_UserTbl u on r.User_Id=u.Id and u.Active=1 and  u.UserId=".$param['Id']." order by r.Date desc";
+                $update="";
+                break;
+            case 'UserLastExamSeen':
+                $select="select top 1 r.* from Quiz_ResultTbl r where Id=".$param['Id'];
+                $update="update Quiz_ResultTbl set seen=1 where Id=".$param['Id'];
+                break;
         }
         //if($function=='Reservation')dd($select,$update,$insert);
             $response = Http::withHeaders([

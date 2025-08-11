@@ -50,6 +50,8 @@ class SurveyController extends Controller
             'exam_name' => $cachedData['exam_name'],
             'exam_des' => $cachedData['exam_des'],
             'exam_msg' => $cachedData['exam_msg'],
+            'user' => $cachedData['user'],
+            'url' => $cachedData['url'],
             'data' => $quizData
         ], now()->addMinutes(config('quiz.cache_minutes')));
 
@@ -96,7 +98,8 @@ class SurveyController extends Controller
                     return $value['name'] == 'age';
                 })['value'],
                 'Support_Id' => $cachedData['supporter_id'],
-                'ExamId' => $cachedData['exam_id']
+                'ExamId' => $cachedData['exam_id'],
+                'UserId' => $cachedData['user']
             ];
 
             // create user
@@ -244,6 +247,8 @@ class SurveyController extends Controller
         $exam=['name'=>$cachedData['exam_name'],'des'=>$cachedData['exam_des'],'msg'=>$cachedData['exam_msg']];
         // delete cached data
         $func=new FunctionController();
+        if($cachedData['url'])
+        $func->getData('update',['Id' => $cachedData['url']],'ExpireLike',1);
         $uc = $func->getData('select',['Id' => $user],'chkUser',1,0,$cachedData['exam_id'] ?? 1)->first()['userC']??0;
        
         if(!$uc)
@@ -252,6 +257,58 @@ class SurveyController extends Controller
         
            // $uR = $func->getData('select',['Id' => $user],'UserResult',1,0,$cachedData['exam_id'] ?? 1)->first();
          Cache::forget(config('quiz.cache_prefix') . $request->ip());
+
+        if(($cachedData['exam_id'] ?? 1)==2)
+        {
+dd('h');
+         $apiKey ='952183AC-D944-4D00-93D8-04F2C0500ED2';
+        $apiMainurl ='http://sms.parsgreen.ir/Apiv2/Message/SendSms';
+        $SmsBody ="تحلیل تست سلامت موی شما در حال آماده‌سازیست.
+به‌زودی نتیجه تخصصی رو دریافت می‌کنید.";
+
+ 
+            $cachedQuestions = $cachedData['data'];
+
+            // split user data and survey data
+            $infoData = Arr::where($cachedQuestions, function ($value) {
+                return $value['category'] == 'info';
+            });
+
+            $userData = [
+                'Name' => Arr::first($infoData, function ($value) {
+                    return $value['name'] == 'name';
+                })['value'],
+                'Phone' => Arr::first($infoData, function ($value) {
+                    return $value['name'] == 'phone';
+                })['value'],
+                'City' => Arr::first($infoData, function ($value) {
+                    return $value['name'] == 'city';
+                })['value'],
+                'Age' => Arr::first($infoData, function ($value) {
+                    return $value['name'] == 'age';
+                })['value'],
+                'Support_Id' => $cachedData['supporter_id'],
+                'ExamId' => $cachedData['exam_id']
+            ];
+
+
+         $ch = curl_init($apiMainurl);
+         $Mobiles = array($userData['Phone']);
+         $SmsNumber = null;
+         $myjson = ["SmsBody"=>$SmsBody, "Mobiles"=>$Mobiles,"SmsNumber"=>$SmsNumber];
+     
+        $jsonDataEncoded = json_encode($myjson);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonDataEncoded);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        $header =array('authorization: BASIC APIKEY:'. $apiKey,'Content-Type: application/json;charset=utf-8');
+        curl_setopt($ch, CURLOPT_HTTPHEADER,$header);
+        $result = curl_exec($ch);
+        $res = json_decode($result);
+        curl_close($ch);
+        }
         return view('finish',compact('exam','uR'));
     }
 }
