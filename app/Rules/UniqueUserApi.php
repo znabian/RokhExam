@@ -29,6 +29,8 @@ class UniqueUserApi implements Rule
     public function passes($attribute, $value)
     {
         try {
+            if($this->eid==2)        
+                return true;
             $func=new FunctionController();
             $uc = $func->getData('select',[$this->field => $value],'chkUser',1,0,$this->eid)->first()['userC']??-1;
     

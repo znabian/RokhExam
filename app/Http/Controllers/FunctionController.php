@@ -116,6 +116,10 @@ class FunctionController extends Controller
                 $select="select top 1 r.* from Quiz_ResultTbl r where Id=".$param['Id'];
                 $update="update Quiz_ResultTbl set seen=1 where Id=".$param['Id'];
                 break;
+            case 'UserStepUpdate':
+                $select="select top 1 Stage from UserTbl r where Id=".$param['Id'];
+                $update="update UserTbl set Stage=6 where Id=".$param['Id'];
+                break;
         }
         //if($function=='Reservation')dd($select,$update,$insert);
             $response = Http::withHeaders([

@@ -260,7 +260,7 @@ class SurveyController extends Controller
 
         if(($cachedData['exam_id'] ?? 1)==2)
         {
-dd('h');
+        $func->getData('update',['Id' => $cachedData['user']],'UserStepUpdate',1);
          $apiKey ='952183AC-D944-4D00-93D8-04F2C0500ED2';
         $apiMainurl ='http://sms.parsgreen.ir/Apiv2/Message/SendSms';
         $SmsBody ="تحلیل تست سلامت موی شما در حال آماده‌سازیست.

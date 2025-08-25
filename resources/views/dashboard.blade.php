@@ -38,8 +38,11 @@
             </div>
             <div dir="ltr" class="d-flex gap-2 justify-content-center mt-2">
                             
-                @foreach(json_decode($uR['Files']) as $file)
+                @foreach(json_decode($uR['Files'],1) as $file)
                 <i data-type="{{$loop->index}}" class="dotbtn c-pointer fa @if($loop->first) fa-circle active @else fa-circle-o @endif "></i>
+                @php
+                  $items[]=$file;
+                @endphp
                 @endforeach               
                     
             </div>
@@ -51,7 +54,11 @@
 @section('script')
 
     <script>
-        src=JSON.parse('{!! $uR['Files'] !!}');
+        @php
+        
+
+        @endphp
+        src=@json($items);
         index=0;
         repeat=0;
 
