@@ -74,4 +74,86 @@ class HomeController extends Controller
 
         return view('home', compact('url','exam'));
     }
+    public function runCron(Request $request)
+    {
+        
+        $func=new FunctionController();
+        $usersS6 = $func->getData('select',['stage'=>6],'getUserStep',1);
+        foreach($usersS6 as $user)
+		{
+			$user=(object)$user;
+			if(empty($user->Pass))
+			{
+				 $password = rand(1000, 9999);
+				$func->getData('update',['pass'=>6,'Id'=>$user->Id],'setUserPass',1);
+			}
+			else
+				 $password = $user->Pass;
+			$username = $user->Phone;
+
+			$apiKey ='952183AC-D944-4D00-93D8-04F2C0500ED2';
+			$apiMainurl ='http://sms.parsgreen.ir/Apiv2/Message/SendSms';
+			 $SmsBody = "ویدئوی تحلیل سلامت موی شما آماده‌ست!
+			لطفاً بعد از تماشا، عدد پایانی فیلم رو برای ما بفرستید تا برای بررسی و تکمیل تحلیل و پاسخ به سوالاتتون با شما تماس بگیریم.
+
+			لینک ورود:
+			https://exam.rokhskin.com/panel/login
+
+
+			نام کاربری: {$username}
+			رمز عبور: {$password}";
+
+
+			$ch = curl_init($apiMainurl);
+			$Mobiles = array($username);
+			$SmsNumber = null;
+			$myjson = ["SmsBody"=>$SmsBody, "Mobiles"=>$Mobiles,"SmsNumber"=>$SmsNumber];
+		
+			$jsonDataEncoded = json_encode($myjson);
+			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonDataEncoded);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+			$header =array('authorization: BASIC APIKEY:'. $apiKey,'Content-Type: application/json;charset=utf-8');
+			curl_setopt($ch, CURLOPT_HTTPHEADER,$header);
+			$result = curl_exec($ch);
+			$res = json_decode($result);
+			curl_close($ch);
+			if($res->R_Success??0)
+			$func->getData('update',['Id' => $user->Id,'stage'=>7],'UserStepUpdate',1);
+		}
+        $usersS7 = $func->getData('select',['stage'=>7],'getUserStep',1);
+        foreach($usersS7 as $user)
+		{
+			$user=(object)$user;
+
+			$apiKey ='952183AC-D944-4D00-93D8-04F2C0500ED2';
+			$apiMainurl ='http://sms.parsgreen.ir/Apiv2/Message/SendSms';
+			 $SmsBody = "یادت نره عددی که در پایان تحلیل گفته شد برامون بفرستی
+تا قدم بعدی مشاوره رو شروع کنیم.";
+
+
+			$ch = curl_init($apiMainurl);
+			$Mobiles = array($user->Phone);
+			$SmsNumber = null;
+			$myjson = ["SmsBody"=>$SmsBody, "Mobiles"=>$Mobiles,"SmsNumber"=>$SmsNumber];
+		
+			$jsonDataEncoded = json_encode($myjson);
+			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonDataEncoded);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+			$header =array('authorization: BASIC APIKEY:'. $apiKey,'Content-Type: application/json;charset=utf-8');
+			curl_setopt($ch, CURLOPT_HTTPHEADER,$header);
+			$result = curl_exec($ch);
+			$res = json_decode($result);
+			curl_close($ch);
+			if($res->R_Success??0)
+			$func->getData('update',['Id' => $user->Id,'stage'=>8],'UserStepUpdate',1);
+		}
+		return response()->json(['success'=>1]);
+       
+    }
 }

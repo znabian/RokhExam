@@ -118,7 +118,19 @@ class FunctionController extends Controller
                 break;
             case 'UserStepUpdate':
                 $select="select top 1 Stage from UserTbl r where Id=".$param['Id'];
-                $update="update UserTbl set Stage=6 where Id=".$param['Id'];
+                $update="update UserTbl set Stage=".($param['stage']??6).",StageUpdatedAt=GETDATE() where Id=".$param['Id'];
+                break;
+            case 'getUserStep':
+                $select="select *  from UserTbl  where Stage=".($param['stage']??6)." and StageUpdatedAt <= DATEADD(HOUR, -24, GETDATE());";
+                $update="";
+                break;
+            case 'setUserPass':
+                $select="select *  from UserTbl  where Id=".$param['Id'];
+                $update="update UserTbl set Pass=".$param['pass']." where Id=".$param['Id'];
+                break;
+            case 'getUser':
+                $select="select Id,Name,Family,Phone,Father  from UserTbl u  where exists(select * from Quiz_UserTbl q where q.UserId=u.Id and q.Id=".$param['Id'].')';
+                $update="";
                 break;
         }
         //if($function=='Reservation')dd($select,$update,$insert);

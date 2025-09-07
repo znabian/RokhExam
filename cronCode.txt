@@ -1,0 +1,3 @@
+دقیقه	ساعت	روز از ماه	ماه	روز از هفته	دستور	انتخاب
+*	*/1	*	*	*	/usr/local/bin/php /home/rokhskin/domains/exam.rokhskin.com/azmoon/cron.php >/dev/null 2>&1	
+ 

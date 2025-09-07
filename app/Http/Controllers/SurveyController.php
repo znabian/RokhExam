@@ -260,43 +260,22 @@ class SurveyController extends Controller
 
         if(($cachedData['exam_id'] ?? 1)==2)
         {
+            
+        $ustbl = $func->getData('select',['Id' => $user],'getUser',1);
+
+        if($ustbl->count())
+		{
+			$ustbl =$ustbl->first();
         $func->getData('update',['Id' => $cachedData['user']],'UserStepUpdate',1);
          $apiKey ='952183AC-D944-4D00-93D8-04F2C0500ED2';
         $apiMainurl ='http://sms.parsgreen.ir/Apiv2/Message/SendSms';
         $SmsBody ="تحلیل تست سلامت موی شما در حال آماده‌سازیست.
 به‌زودی نتیجه تخصصی رو دریافت می‌کنید.";
+        $ch = curl_init($apiMainurl);
+        $Mobiles = array($ustbl['Phone']);
+        $SmsNumber = null;
+        $myjson = ["SmsBody"=>$SmsBody, "Mobiles"=>$Mobiles,"SmsNumber"=>$SmsNumber];
 
- 
-            $cachedQuestions = $cachedData['data'];
-
-            // split user data and survey data
-            $infoData = Arr::where($cachedQuestions, function ($value) {
-                return $value['category'] == 'info';
-            });
-
-            $userData = [
-                'Name' => Arr::first($infoData, function ($value) {
-                    return $value['name'] == 'name';
-                })['value'],
-                'Phone' => Arr::first($infoData, function ($value) {
-                    return $value['name'] == 'phone';
-                })['value'],
-                'City' => Arr::first($infoData, function ($value) {
-                    return $value['name'] == 'city';
-                })['value'],
-                'Age' => Arr::first($infoData, function ($value) {
-                    return $value['name'] == 'age';
-                })['value'],
-                'Support_Id' => $cachedData['supporter_id'],
-                'ExamId' => $cachedData['exam_id']
-            ];
-
-
-         $ch = curl_init($apiMainurl);
-         $Mobiles = array($userData['Phone']);
-         $SmsNumber = null;
-         $myjson = ["SmsBody"=>$SmsBody, "Mobiles"=>$Mobiles,"SmsNumber"=>$SmsNumber];
-     
         $jsonDataEncoded = json_encode($myjson);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
         curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonDataEncoded);
@@ -308,6 +287,8 @@ class SurveyController extends Controller
         $result = curl_exec($ch);
         $res = json_decode($result);
         curl_close($ch);
+        }
+         
         }
         return view('finish',compact('exam','uR'));
     }
